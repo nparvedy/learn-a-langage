@@ -1,5 +1,13 @@
 <?php
 session_start();
+
+require '../class/BDD.php';
+
+$bdd = new BDD;
+
+$allList = $bdd->getList();
+
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -22,15 +30,17 @@ session_start();
             <div class="col-md-6">
                 <div class="h-100 p-4  border rounded-3">
                     <h2 class="mb-3">Charger votre liste</h2>
-                    <form action="" method="post">
-                        <select class="form-select form-select-sm mb-3" aria-label=".form-select-sm example">
+                    <form action="#loadList" method="post">
+                        <select class="form-select form-select-sm mb-3" aria-label=".form-select-sm example" name="list">
                             <option selected>Charger votre liste de mot</option>
-                            <option value="1">One</option>
-                            <option value="2">Two</option>
-                            <option value="3">Three</option>
+                            <?php
+                            for ($i = 0; $i < count($allList); $i++) {
+                                echo "<option value=\"" . $allList[$i]['id'] . "\">" . $allList[$i]['list_name'] . "</option>";
+                            }
+                            ?>
                         </select>
 
-                        <button class="btn btn-outline-secondary" type="submit">Charger</button>
+                        <button class="btn btn-outline-secondary loadList" type="submit" onclick="loadSection('loadList')">Charger</button>
                     </form>
                 </div>
             </div>

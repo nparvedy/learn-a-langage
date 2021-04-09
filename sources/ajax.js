@@ -8,9 +8,12 @@ function loadSection(button) {
         return
     }
 
-    linkHref = button.hash;
-    //console.log(window.location.search.includes("?"));
-    linkHref = linkHref.replace("#", '');
+    var linkHref = button;
+
+    if (typeof button != "string") {
+        linkHref = button.hash;
+        linkHref = linkHref.replace("#", '');
+    }
 
     //sectionContent.innerHTML = "Chargement...";
     httpRequest.onreadystatechange = function () {
@@ -40,12 +43,14 @@ window.addEventListener("load", function () {
     //     error = buttonArray[1].replace("error=", "");
     // }
 
-    if (button != "") {
-        var button = document.querySelector("." + button);
+    // if (button != "") {
+    //     var button = document.querySelector("." + button);
 
-        loadSection(button);
+    //     loadSection(button);
 
-    }
+    // }
+
+    loadSection(button);
 
 
 })

@@ -76,4 +76,11 @@ class BDD
             'word_translated' => $wordTranslated
         ]);
     }
+
+    public function getList()
+    {
+        $req = $this->pdo->query('SELECT * FROM list');
+
+        return $req->fetchAll();
+    }
 }
