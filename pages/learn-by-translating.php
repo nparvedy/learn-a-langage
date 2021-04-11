@@ -5,10 +5,11 @@ require '../class/BDD.php';
 
 $bdd = new BDD;
 
-$allList = $bdd->getList();
-
+$allList = $bdd->getList($_SESSION['id']);
 
 ?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -30,9 +31,9 @@ $allList = $bdd->getList();
             <div class="col-md-6">
                 <div class="h-100 p-4  border rounded-3">
                     <h2 class="mb-3">Charger votre liste</h2>
-                    <form action="#loadList" method="post">
+                    <form method="post" id="load-list">
                         <select class="form-select form-select-sm mb-3" aria-label=".form-select-sm example" name="list">
-                            <option selected>Charger votre liste de mot</option>
+                            <option selected value="<?= $allList[0]['id'] ?>">Charger votre liste de mot</option>
                             <?php
                             for ($i = 0; $i < count($allList); $i++) {
                                 echo "<option value=\"" . $allList[$i]['id'] . "\">" . $allList[$i]['list_name'] . "</option>";
@@ -40,7 +41,7 @@ $allList = $bdd->getList();
                             ?>
                         </select>
 
-                        <button class="btn btn-outline-secondary loadList" type="submit" onclick="loadSection('loadList')">Charger</button>
+                        <button class="btn btn-outline-secondary " type="submit">Charger</button>
                     </form>
                 </div>
             </div>
@@ -60,6 +61,7 @@ $allList = $bdd->getList();
     <section id="content">
 
     </section>
+    <script src="../sources/quizz.js"></script>
     <script src="../sources/ajax.js"></script>
     <script src="../sources/create-list.js"></script>
     <?php require '../component/link.php'; ?>

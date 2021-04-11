@@ -77,10 +77,31 @@ class BDD
         ]);
     }
 
-    public function getList()
+    public function getList($id_user)
     {
-        $req = $this->pdo->query('SELECT * FROM list');
+        $req = $this->pdo->query("SELECT * FROM list WHERE user_id = $id_user");
 
         return $req->fetchAll();
+    }
+
+    public function getWordList($idList)
+    {
+        $req = $this->pdo->prepare('SELECT * FROM list_word WHERE list_id = :list_id');
+        $req->execute(array(
+            'list_id' => $idList
+        ));
+
+        return $req->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function majQuizz($object)
+    {
+        $req = $this->pdo->prepare('UPDATE list_word SET wrong_counter = :wrong_counter, right_counter = :right_counter, success_rate = :success_rate WHERE id = :id');
+        $req->execute([
+            'wrong_counter' => $object->wrong_counter,
+            'right_counter' => $object->right_counter,
+            'success_rate' => $object->success_rate,
+            'id' => $object->id
+        ]);
     }
 }

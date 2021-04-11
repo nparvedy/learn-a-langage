@@ -22,6 +22,10 @@ function loadSection(button) {
         }
     };
 
+    if (linkHref === '') {
+        return
+    }
+
     if (window.location.href.includes("pages")) {
         httpRequest.open('GET', '../ajax/' + linkHref + '.php', true);
     } else if (window.location.search.includes("?")) {
@@ -36,27 +40,32 @@ function loadSection(button) {
 window.addEventListener("load", function () {
     button = this.location.hash;
     button = button.replace("#", '');
-
-    // buttonArray = button.split('?');
-    // if (buttonArray.length >= 2) {
-    //     button = buttonArray[0];
-    //     error = buttonArray[1].replace("error=", "");
-    // }
-
-    // if (button != "") {
-    //     var button = document.querySelector("." + button);
-
-    //     loadSection(button);
-
-    // }
-
     loadSection(button);
 
 
-})
+});
 
-// function errorForm(error) {
-//     if (error = "passwordNotSame") {
-//         var passNotSame = document.querySelector('#passwordConfirm');
-//     }
-// }
+var testForm = document.getElementById('load-list');
+testForm.onsubmit = function (event) {
+    event.preventDefault();
+
+    var request = new XMLHttpRequest();
+    request.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200) {
+            sectionContent.innerHTML = request.responseText;
+        }
+    };
+    // POST to httpbin which returns the POST data as JSON
+    request.open('POST', '../ajax/loadList.php', /* async = */ true);
+
+    var formData = new FormData(document.getElementById('load-list'));
+    request.send(formData);
+
+    console.log(request.response);
+}
+
+function compter() {
+    var click = document.querySelector(".compter");
+    click.innerHTML++;
+}
+
