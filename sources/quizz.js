@@ -6,13 +6,12 @@ class Quizz {
     lastWord;
     mytranslate;
     resultCheck = "";
-    rightCounter = 0;
-    wrongCounter = 0;
-    rightCounterReverse = 0;
-    wrongCounterReverse = 0;
     prioritizeWordBoard = [];
     reverse = false;
-    time = 1000;
+    time = 180;
+    isTimer = false;
+    goodAnswer = 0;
+    wrongAnswer = 0;
 
     prioritizeWordBoardNew = [];
 
@@ -22,13 +21,17 @@ class Quizz {
     static MEDIUM = 80;
     static EASY = 100;
 
-    startQuizz(listWord) {
+    startQuizz(listWord, timer = false) {
         this.listWord = listWord;
         this.setContent();
         this.next();
 
-        this.option();
-        this.timer();
+        if (timer) {
+            this.isTimer = true;
+            this.goodAnswer = 0;
+            this.option();
+            this.timer();
+        }
 
     }
 
@@ -225,9 +228,10 @@ class Quizz {
 
         if ((this.reverse ? this.listWord[this.wordActual]['word_to_translate'].toLowerCase().trim() : this.listWord[this.wordActual]['word_translated'].toLowerCase().trim()) == WordTranslated.toLowerCase().trim()) {
             (this.reverse ? this.listWord[this.wordActual]['right_counter_reverse']++ : this.listWord[this.wordActual]['right_counter']++);
-            (this.reverse ? this.rightCounterReverse++ : this.rightCounter++);
+            this.rightCounter++;
             this.resultCheck = "good";
             this.calculSuccessRate(this.wordActual);
+            this.goodAnswer++;
 
             //Si on tombe sur le bon mot alors on réinitialise  
             if (this.prioritizeWordBoardNew != 0) {
@@ -242,7 +246,7 @@ class Quizz {
             }
         } else {
             (this.reverse ? this.listWord[this.wordActual]['wrong_counter_reverse']++ : this.listWord[this.wordActual]['wrong_counter']++);
-            (this.reverse ? this.wrongCounterReverse++ : this.wrongCounter++);
+            this.wrongAnswer++;
             this.resultCheck = "wrong";
             this.calculSuccessRate(this.wordActual);
 
@@ -279,7 +283,7 @@ class Quizz {
                 <div class="alert alert-success" role="alert">
                     Bravo le bon mot était bien : ${(this.reverse ? this.listWord[this.lastWord]['word_to_translate'] : this.listWord[this.lastWord]['word_translated'])}
                 </div>
-                <p>Vous avez ${this.rightCounter} bon et ${this.wrongCounter} faux.</p>
+                <p>Vous avez ${this.goodAnswer} bon et ${this.wrongAnswer} faux.</p>
                 `;
         } else if (result == "wrong") {
             resultObject.innerHTML = `
@@ -287,8 +291,21 @@ class Quizz {
             <div class="alert alert-danger" role="alert">
                 Et non ! La traduction était plutôt : ${(this.reverse ? this.listWord[this.lastWord]['word_to_translate'] : this.listWord[this.lastWord]['word_translated'])}
             </div>
-            <p>Vous avez ${this.rightCounter} bon et ${this.wrongCounter} faux.</p>
+            <p>Vous avez ${this.goodAnswer} bon et ${this.wrongAnswer} faux.</p>
             `
+        }
+
+        if (this.isTimer) {
+            resultObject.innerHTML = resultObject.innerHTML + `
+            <p>Vous avez ${this.goodAnswer} bonnes réponses et il vous en faut 20 pour terminer le quizz !</p>
+            `
+            if (this.goodAnswer == 20) {
+                resultObject.innerHTML = `<div class="alert alert-success" role="alert">Bravo tu as réussi le test !</div>`;
+                setInterval(function () {
+                    quizz.stop();
+
+                }, 2000)
+            }
         }
 
     }

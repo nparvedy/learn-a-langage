@@ -42,6 +42,10 @@ $levelQuizz = new LevelQuizz($bdd);
                             }
                             ?>
                         </select>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="exampleCheck1" name="timer">
+                            <label class="form-check-label">Timer ? (3 minutes)</label>
+                        </div>
 
                         <button class="btn btn-outline-secondary " type="submit">Charger</button>
                     </form>
