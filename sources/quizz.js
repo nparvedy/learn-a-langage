@@ -8,8 +8,11 @@ class Quizz {
     resultCheck = "";
     rightCounter = 0;
     wrongCounter = 0;
+    rightCounterReverse = 0;
+    wrongCounterReverse = 0;
     prioritizeWordBoard = [];
     reverse = false;
+    time = 1000;
 
     prioritizeWordBoardNew = [];
 
@@ -23,6 +26,10 @@ class Quizz {
         this.listWord = listWord;
         this.setContent();
         this.next();
+
+        this.option();
+        this.timer();
+
     }
 
     setContent() {
@@ -56,11 +63,12 @@ class Quizz {
                 </div>
             </div>
         </div>
-        <div class="d-grid gap-2 mt-3 d-sm-flex">
+        <div class="d-grid gap-2 mt-3 mb-3 d-sm-flex">
             <button type="button" class="btn btn-primary"  onclick="quizz.next()">Suivant</button>
             <button type="button" class="btn btn-danger" onclick="quizz.stop()">Stop</button>
             <button type="button" class="btn btn-info" onclick="quizz.reverseMethod()">Reverse</button>
-        </div>`;
+        </div>
+        `;
 
         this.mytranslate = document.querySelector("#myTranslate");
         this.event();
@@ -202,21 +210,22 @@ class Quizz {
     deleteWordPrioritizeNew(idWord) {
         if (this.prioritizeWordBoardNew.includes(idWord)) {
 
-            if (this.listWord[idWord]['success_rate'] > Quizz.HARD) {
+            if (this.calculAverage(idWord, this.reverse) > Quizz.HARD) {
                 const index = this.prioritizeWordBoardNew.indexOf(idWord);
-
                 if (index > - 1) {
                     this.prioritizeWordBoardNew.splice(index, 1);
                 }
             }
         }
+
+        console.log(this.prioritizeWordBoardNew);
     }
 
     checkWord(WordTranslated) {
 
         if ((this.reverse ? this.listWord[this.wordActual]['word_to_translate'].toLowerCase().trim() : this.listWord[this.wordActual]['word_translated'].toLowerCase().trim()) == WordTranslated.toLowerCase().trim()) {
-            this.listWord[this.wordActual]['right_counter']++;
-            this.rightCounter++;
+            (this.reverse ? this.listWord[this.wordActual]['right_counter_reverse']++ : this.listWord[this.wordActual]['right_counter']++);
+            (this.reverse ? this.rightCounterReverse++ : this.rightCounter++);
             this.resultCheck = "good";
             this.calculSuccessRate(this.wordActual);
 
@@ -232,8 +241,8 @@ class Quizz {
                 }
             }
         } else {
-            this.listWord[this.wordActual]['wrong_counter']++;
-            this.wrongCounter++;
+            (this.reverse ? this.listWord[this.wordActual]['wrong_counter_reverse']++ : this.listWord[this.wordActual]['wrong_counter']++);
+            (this.reverse ? this.wrongCounterReverse++ : this.wrongCounter++);
             this.resultCheck = "wrong";
             this.calculSuccessRate(this.wordActual);
 
@@ -243,12 +252,20 @@ class Quizz {
     }
 
     calculSuccessRate(i) {
-        var divide = (parseInt(this.listWord[i]['right_counter']) + parseInt(this.listWord[i]['wrong_counter']));
+
+        var moyenne = this.calculAverage(i, false);
+        var moyenneReverse = this.calculAverage(i, true);
+
+        this.listWord[i]['success_rate'] = (moyenne + moyenneReverse) / 2;
+    }
+
+    calculAverage(i, reverse) {
+        var divide = (reverse ? (parseInt(this.listWord[i]['right_counter_reverse']) + parseInt(this.listWord[i]['wrong_counter_reverse'])) : (parseInt(this.listWord[i]['right_counter']) + parseInt(this.listWord[i]['wrong_counter'])));
         if (divide == 0) {
             divide = 1;
         }
 
-        this.listWord[i]['success_rate'] = this.listWord[i]['right_counter'] * 100 / divide;
+        return (reverse ? this.listWord[i]['right_counter_reverse'] : this.listWord[i]['right_counter']) * 100 / divide;
     }
 
     result(result = "") {
@@ -275,6 +292,38 @@ class Quizz {
         }
 
     }
+
+    timer() {
+
+        var timeid = document.querySelector("#timer");
+        setInterval(function () {
+            var time = quizz.setTime();
+            if (time <= 0) {
+                timeid.innerHTML = "C'est terminé !";
+                quizz.stop();
+            } else {
+                timeid.innerHTML = "Timer : " + time;
+            }
+
+        }, 1000)
+
+    }
+
+    setTime() {
+        this.time = this.time - 1
+        return this.time;
+    }
+
+    option() {
+        var timer = document.createElement("div");
+        timer.id = "timer";
+        timer.style.position = "fixed";
+        timer.style.left = "90%";
+        timer.style.top = "50%";
+        timer.classList.add("p-4", "border", "rounded-3");
+        timer.innerHTML = "Timer : " + this.time;
+        var content = document.querySelector('#content').appendChild(timer);
+    }
 }
 
 var quizz = new Quizz;
@@ -282,6 +331,7 @@ var quizz = new Quizz;
 function next() {
     quizz.next();
 }
+
 
 // function reverse() {
 //     quizz.reverse();

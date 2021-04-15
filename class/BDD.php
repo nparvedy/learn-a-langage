@@ -94,12 +94,24 @@ class BDD
         return $req->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    public function getSuccessRate($idList)
+    {
+        $req = $this->pdo->prepare('SELECT id, success_rate FROM list_word WHERE list_id = :list_id');
+        $req->execute(array(
+            'list_id' => $idList
+        ));
+
+        return $req->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     public function majQuizz($object)
     {
-        $req = $this->pdo->prepare('UPDATE list_word SET wrong_counter = :wrong_counter, right_counter = :right_counter, success_rate = :success_rate WHERE id = :id');
+        $req = $this->pdo->prepare('UPDATE list_word SET wrong_counter = :wrong_counter, right_counter = :right_counter, wrong_counter_reverse = :wrong_counter_reverse, right_counter_reverse = :right_counter_reverse, success_rate = :success_rate WHERE id = :id');
         $req->execute([
             'wrong_counter' => $object->wrong_counter,
             'right_counter' => $object->right_counter,
+            'wrong_counter_reverse' => $object->wrong_counter_reverse,
+            'right_counter_reverse' => $object->right_counter_reverse,
             'success_rate' => $object->success_rate,
             'id' => $object->id
         ]);

@@ -7,6 +7,9 @@ $bdd = new BDD;
 
 $allList = $bdd->getList($_SESSION['id']);
 
+require '../class/LevelQuizz.php';
+
+$levelQuizz = new LevelQuizz($bdd);
 ?>
 
 
@@ -22,7 +25,6 @@ $allList = $bdd->getList($_SESSION['id']);
 
 <body>
     <?php require '../component/menu.php'; ?>
-
     <div class="col-lg-8 mx-auto p-3 py-md-5">
         <h1 class="d-flex align-items-center pb-3  border-bottom fs-3" style="font-weight:400;">Apprendre en traduisant</h1>
     </div>
@@ -33,10 +35,10 @@ $allList = $bdd->getList($_SESSION['id']);
                     <h2 class="mb-3">Charger votre liste</h2>
                     <form method="post" id="load-list">
                         <select class="form-select form-select-sm mb-3" aria-label=".form-select-sm example" name="list">
-                            <option selected value="<?= $allList[0]['id'] ?>">Charger votre liste de mot</option>
+                            <option selected value="<?= $allList[0]['id'] ?>">Charger votre liste de mot </option>
                             <?php
                             for ($i = 0; $i < count($allList); $i++) {
-                                echo "<option value=\"" . $allList[$i]['id'] . "\">" . $allList[$i]['list_name'] . "</option>";
+                                echo "<option value=\"" . $allList[$i]['id'] . "\">" . $allList[$i]['list_name'] . " " . $levelQuizz->level($allList[$i]['id']) . "</option>";
                             }
                             ?>
                         </select>
