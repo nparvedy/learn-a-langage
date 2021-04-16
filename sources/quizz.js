@@ -122,19 +122,60 @@ class Quizz {
         this.next();
     }
 
+    SelectMinWordBoard() {
+        var array = [];
+
+        for (var i = 0; i < this.prioritizeWordBoardNew.length; i++) {
+            array.push(this.calculAverage(this.prioritizeWordBoardNew[i], this.reverse));
+        }
+
+        var min = Math.min(...array);
+
+        var key = this.arraySearch(array, min);
+
+        return key;
+    }
+
+    arraySearch(arr, val) {
+        for (var i = 0; i < arr.length; i++)
+            if (arr[i] === val)
+                return i;
+        return false;
+    }
+
     //version 2 de selectWord
     selectWordNew() {
 
         if (this.prioritizeWordBoardNew.length == 5) {
-            const random = Math.floor(Math.random() * this.prioritizeWordBoardNew.length);
+            var minKey = this.SelectMinWordBoard();
 
-            return this.prioritizeWordBoardNew[random];
+            var array = [];
+
+            for (var i = 0; i < this.prioritizeWordBoardNew.length; i++) {
+                if (minKey == i) {
+                    for (var a = 0; a < 3; a++) {
+                        array.push(i);
+                    }
+                } else {
+                    array.push(i);
+                }
+            }
+
+            array.sort(() => Math.random() - 0.5);
+
+            const random = Math.floor(Math.random() * array.length);
+
+
+            //faire en sorte que le score le plus bas apparaisse plus souvent et ainsi de suite
+
+
+            return this.prioritizeWordBoardNew[array[random]];
         } else {
             return this.selectWord();
         }
     }
 
-    //obsolète version
+
     selectWord() {
         var arrayWord = [];
         for (var i = 0; i < this.listWord.length; i++) {
@@ -221,7 +262,6 @@ class Quizz {
             }
         }
 
-        console.log(this.prioritizeWordBoardNew);
     }
 
     checkWord(WordTranslated) {
