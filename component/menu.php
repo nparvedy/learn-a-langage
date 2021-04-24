@@ -17,6 +17,7 @@
                     <?php
                     } else {
                     ?>
+                        <a class="nav-link" href="../pages/profil.php">Profil</a>
                         <a class="nav-link connexion" href="app/logout.php">Deconnexion</a>
                     <?php
 

@@ -106,13 +106,14 @@ class BDD
 
     public function majQuizz($object)
     {
-        $req = $this->pdo->prepare('UPDATE list_word SET wrong_counter = :wrong_counter, right_counter = :right_counter, wrong_counter_reverse = :wrong_counter_reverse, right_counter_reverse = :right_counter_reverse, success_rate = :success_rate WHERE id = :id');
+        $req = $this->pdo->prepare('UPDATE list_word SET wrong_counter = :wrong_counter, right_counter = :right_counter, wrong_counter_reverse = :wrong_counter_reverse, right_counter_reverse = :right_counter_reverse, success_rate = :success_rate, word_validate = :word_validate WHERE id = :id');
         $req->execute([
             'wrong_counter' => $object->wrong_counter,
             'right_counter' => $object->right_counter,
             'wrong_counter_reverse' => $object->wrong_counter_reverse,
             'right_counter_reverse' => $object->right_counter_reverse,
             'success_rate' => $object->success_rate,
+            'word_validate' => $object->word_validate,
             'id' => $object->id
         ]);
     }

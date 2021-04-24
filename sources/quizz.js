@@ -1,3 +1,20 @@
+//todo : faire en sorte que les phrase qui contient les mots seul sortent à la suite (ex : "word" => "A great Word")
+//todo : plus on se trompe sur certains mots dans une phrase et plus ils ont des chances d'apparaître pour aider
+//todo : faire en sorte que les phrases dont les mots se ressemble à plus de chance d'apparaître
+//todo : si une réponse est celui d'un autre mot, alors faire en sorte que ces deux mots apparaisse plus souvent /// si ça ne marche pas, alors faire en sorte qu'au début on entraine qu'un des deux, après on entraîne sur l'autre mot et après on entraine avec les deux en même temps
+//todo : faire en sorte qu'une ne retombe pas plus que 2 fois d'affilé
+//todo : avoir un historique des 5 derniers mot et si une erreur est provoqué après réussite, vérifié si deux mots n'est pas revenu deux fois et qui pourrait porter confusion à l'utilisateur !! vraiment important
+//todo : lors d'une phrase, si l'utilisateur se trompe sur certains mot, plutôt que d'autres, alors faire en sorte que les indices sont ceux où il s'est trompé (concerne seulement les 5 mots du tableau pour limité au maximum)
+//todo : Réduire à 3 mot/phrases quand il y en a 5 dans le tableau et faire en sorte qu'il ne peuvent pas retomber deux fois d'affilé
+//todo : Si l'utilisateur met plus de 10 secondes pour valider le prochain mot alors il doit réaparaître au bout des 3 prochains mots
+//todo : si la phrase à plus de 5 mots, alors les indices doivent être validés, exemple (un jour .. ....) ou (.. .... il pleut), tant que les deux ne sont pas validés alors il y aura toujours les indices.
+//todo : récupérer les erreurs de mots d'une réponse, si il est complètement différent du mot de la réponse et si c'est le cas alors chercher si le mot existe  dans la liste, si c'est le cas alors l'afficher.
+
+//todo : faire en sorte qu'à chaque nouvelle liste, les mots s'ajouté dans une liste entière de tous les mots de toutes les listes
+//todo : pendant l'ajout d'un nouveau mot, si le même existe déjà alors sa traduction s'ajoute alors
+
+//DONE : Ce n'est pas parce qu'on réussi du premier coup (100%) qu'il doit apparaitre aussi peu souvent, surtout avec l'aide. La validation doit se réussir sans aide. 
+//DONE : faire en sorte que le mot seule sortent en premier et après les phrases
 class Quizz {
 
     listWord;
@@ -12,6 +29,10 @@ class Quizz {
     isTimer = false;
     goodAnswer = 0;
     wrongAnswer = 0;
+    thereAreIndice = false;
+    onlyWordList = [];
+    onlyWordListReverse = [];
+    onlyIdWord = "";
 
     prioritizeWordBoardNew = [];
 
@@ -24,6 +45,7 @@ class Quizz {
     startQuizz(listWord, timer = false) {
         this.listWord = listWord;
         this.setContent();
+        this.addAllWord();
         this.next();
 
         if (timer) {
@@ -33,6 +55,16 @@ class Quizz {
             this.timer();
         }
 
+    }
+
+    addAllWord() {
+        for (var i = 0; i < this.listWord.length; i++) {
+            this.onlyWordList.push(this.listWord[i]['word_to_translate']);
+        }
+
+        for (var i = 0; i < this.listWord.length; i++) {
+            this.onlyWordListReverse.push(this.listWord[i]['word_translated']);
+        }
     }
 
     setContent() {
@@ -58,6 +90,7 @@ class Quizz {
                             <input type="text" class="form-control" id="myTranslate" name="wordTranslated-0">
                         </div>
                     </div>
+                    <p>${this.foundTheSentence()}</p>
                 </div>
             </div>
             <div class="col-md-6">
@@ -86,6 +119,65 @@ class Quizz {
 
     }
 
+    foundTheSentence() {
+        // if (!this.reverse) {
+        //     return "";
+        // }
+
+        var nbWord = 0;
+        var averageWord = this.calculAverage(this.wordActual, this.reverse);
+
+        //var sentence = this.listWord[this.wordActual]['word_to_translate'];
+        var sentence = (this.reverse ? this.listWord[this.wordActual]['word_to_translate'] : this.listWord[this.wordActual]['word_translated']);
+
+        var randomArray = [];
+
+        if (averageWord <= Quizz.HARDCORE) {
+            nbWord = 2;
+        } else if (averageWord <= Quizz.REALLY_HARD) {
+            nbWord = 1;
+        }
+
+        var sentenceArray = sentence.split(" ");
+
+        //faut que la phrase est + de 2 mot
+        if (sentenceArray.length == 1 || sentenceArray.length == 2) {
+            nbWord = 0;
+        }
+
+        if (nbWord == 2 && sentenceArray.length > 4) {
+            nbWord = 3;
+        }
+
+        if (nbWord != 0) {
+            this.thereAreIndice = true;
+        } else {
+            this.thereAreIndice = false;
+        }
+
+        while (randomArray.length != nbWord) {
+            var random = Math.floor(Math.random() * sentenceArray.length);
+            if (!randomArray.includes(random)) {
+                randomArray.push(random);
+            }
+        }
+
+        sentence = "";
+
+        for (var i = 0; i < sentenceArray.length; i++) {
+            if (randomArray.includes(i)) {
+                sentence = sentence + sentenceArray[i];
+            } else {
+                for (var a = 0; a < sentenceArray[i].length; a++) {
+                    sentence = sentence + ".";
+                }
+            }
+            sentence = sentence + " ";
+        }
+
+        return sentence;
+    }
+
     event() {
         this.mytranslate.addEventListener("keydown", function (e) {
             if (e.code === "Enter") {
@@ -95,7 +187,6 @@ class Quizz {
     }
 
     stop() {
-        console.log("Vous avez arrêté");
         var data = JSON.stringify(this.listWord);
 
         var xhr = new XMLHttpRequest();
@@ -143,7 +234,7 @@ class Quizz {
         return false;
     }
 
-    //version 2 de selectWord
+    //Etape 1
     selectWordNew() {
 
         if (this.prioritizeWordBoardNew.length == 5) {
@@ -165,7 +256,6 @@ class Quizz {
 
             const random = Math.floor(Math.random() * array.length);
 
-
             //faire en sorte que le score le plus bas apparaisse plus souvent et ainsi de suite
 
 
@@ -175,12 +265,12 @@ class Quizz {
         }
     }
 
-
+    //Si étape 1 n'a pas trouvé de mot, alors l'étape 2 prend la relève
     selectWord() {
         var arrayWord = [];
         for (var i = 0; i < this.listWord.length; i++) {
             this.calculSuccessRate(i);
-            if (parseInt(this.listWord[i]['success_rate']) <= Quizz.HARDCORE) {
+            if (parseInt(this.listWord[i]['success_rate']) <= Quizz.HARDCORE || this.listWord[i]['word_validate'] == false) {
                 var a = 0;
                 while (a < Math.round(this.listWord.length)) {
                     arrayWord.push(i);
@@ -188,7 +278,7 @@ class Quizz {
                 }
             } else if (parseInt(this.listWord[i]['success_rate']) <= Quizz.REALLY_HARD) {
                 var a = 0;
-                while (a < Math.round(this.listWord.length / 2)) {
+                while (a < Math.round(this.listWord.length / 3)) {
                     arrayWord.push(i);
                     a++;
                 }
@@ -210,9 +300,6 @@ class Quizz {
 
         }
 
-        //si on se trompe trop sur un mot alors il apparait beaucoup plus souvent jusqu'à y arriver
-        //ce qui évite que trop de mot hardcore apparaisse de manière régulière
-        //ou qu'on ne tombe pas assez sur des mots dont on ne maitrise pas totalement
         if (this.prioritizeWordBoard.length != 0) {
             var a = 0;
             while (a < this.listWord.length * this.prioritizeWordBoard[1]) {
@@ -224,8 +311,61 @@ class Quizz {
         arrayWord = arrayWord.sort(() => Math.random() - 0.5);
 
         const random = Math.floor(Math.random() * arrayWord.length);
-        //return number
-        return arrayWord[random];
+
+        var value = (this.checkIsAnotherWord(arrayWord[random]) ? this.onlyIdWord : arrayWord[random]);
+
+        return value;
+    }
+
+    checkIsAnotherWord(idWord) {
+        //vérifier si la phrase n'est pas un mot
+        var translateOrNot = (this.reverse ? "word_translated" : "word_to_translate");
+
+        if (this.listWord[idWord][translateOrNot].trim().includes(" ")) {
+            //if (this.listWord[idWord][translateOrNot].trim()) {
+            //traiter la phrase et prendre qu'un mot
+            var sentence = this.listWord[idWord][translateOrNot].trim().split(" ");
+            for (var i = 0; i < sentence.length; i++) {
+
+                //on copie le tableau sans ses propriété de l'attribut de la classe
+                // var onlyWordListCopy = JSON.parse(JSON.stringify(this.onlyWordList))
+                // onlyWordListCopy[idWord] = "";
+
+                var idWordFound = this.findAWordInTheList(sentence[i]);
+
+                //chercher si le mot est contenu ailleurs dans la liste hormis sa propre case
+                if (idWordFound != false) {
+
+                    // vérifier si le mot n'est pas à 0% de réussite
+
+                    if (this.calculAverage(idWordFound, this.reverse) == 0) {
+                        //si le mot à 0% alors on le retourne à la place de la phrase
+
+                        this.onlyIdWord = idWordFound;
+
+                        return true;
+                    }
+
+                }
+            }
+            //}
+        }
+
+        return false;
+
+    }
+
+    findAWordInTheList(val) {
+        var list = (this.reverse ? this.onlyWordListReverse : this.onlyWordList);
+        for (var i = 0; i < list.length; i++) {
+            if (list[i] === val) {
+                return i;
+
+            }
+
+        }
+
+        return false;
     }
 
     addPrioritizeWord(idWord) {
@@ -254,7 +394,7 @@ class Quizz {
     deleteWordPrioritizeNew(idWord) {
         if (this.prioritizeWordBoardNew.includes(idWord)) {
 
-            if (this.calculAverage(idWord, this.reverse) > Quizz.HARD) {
+            if (this.calculAverage(idWord, this.reverse) > Quizz.HARD && this.listWord[idWord]['word_validate'] == true) {
                 const index = this.prioritizeWordBoardNew.indexOf(idWord);
                 if (index > - 1) {
                     this.prioritizeWordBoardNew.splice(index, 1);
@@ -272,6 +412,10 @@ class Quizz {
             this.resultCheck = "good";
             this.calculSuccessRate(this.wordActual);
             this.goodAnswer++;
+
+            if (!this.thereAreIndice) {
+                this.listWord[this.wordActual]['word_validate'] = true;
+            }
 
             //Si on tombe sur le bon mot alors on réinitialise  
             if (this.prioritizeWordBoardNew != 0) {
