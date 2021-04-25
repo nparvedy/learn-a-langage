@@ -12,6 +12,7 @@
 //todo : une fois le mot traduit alors afficher là où il y a une erreur si il y en a
 //todo : validation final sans les petits points pour aider
 //todo : le nombre d'indice pourrait être déterminé par le nombres de mots, exemple (5 mot donc 4 indice), et si l'utilisateur réussit les mots alors que l'indice du mot n'est pas affiché alors c'est validé le mot. 
+//todo : faire en sorte qu'une fois la validation sans mot, qu'il ne peut pas retomber une deuxième fois sur la même phrase ou mot
 
 //todo : faire en sorte qu'à chaque nouvelle liste, les mots s'ajouté dans une liste entière de tous les mots de toutes les listes
 //todo : pendant l'ajout d'un nouveau mot, si le même existe déjà alors sa traduction s'ajoute alors
