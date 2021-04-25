@@ -9,12 +9,17 @@
 //todo : Si l'utilisateur met plus de 10 secondes pour valider le prochain mot alors il doit réaparaître au bout des 3 prochains mots
 //todo : si la phrase à plus de 5 mots, alors les indices doivent être validés, exemple (un jour .. ....) ou (.. .... il pleut), tant que les deux ne sont pas validés alors il y aura toujours les indices.
 //todo : récupérer les erreurs de mots d'une réponse, si il est complètement différent du mot de la réponse et si c'est le cas alors chercher si le mot existe  dans la liste, si c'est le cas alors l'afficher.
+//todo : une fois le mot traduit alors afficher là où il y a une erreur si il y en a
+//todo : validation final sans les petits points pour aider
+//todo : le nombre d'indice pourrait être déterminé par le nombres de mots, exemple (5 mot donc 4 indice), et si l'utilisateur réussit les mots alors que l'indice du mot n'est pas affiché alors c'est validé le mot. 
 
 //todo : faire en sorte qu'à chaque nouvelle liste, les mots s'ajouté dans une liste entière de tous les mots de toutes les listes
 //todo : pendant l'ajout d'un nouveau mot, si le même existe déjà alors sa traduction s'ajoute alors
+//todo : si tous les mots sont validés, alors la liste est validé.
 
 //DONE : Ce n'est pas parce qu'on réussi du premier coup (100%) qu'il doit apparaitre aussi peu souvent, surtout avec l'aide. La validation doit se réussir sans aide. 
 //DONE : faire en sorte que le mot seule sortent en premier et après les phrases
+
 class Quizz {
 
     listWord;
@@ -30,6 +35,7 @@ class Quizz {
     goodAnswer = 0;
     wrongAnswer = 0;
     thereAreIndice = false;
+    thereAreIndiceWord = false;
     onlyWordList = [];
     onlyWordListReverse = [];
     onlyIdWord = "";
@@ -138,7 +144,7 @@ class Quizz {
             nbWord = 1;
         }
 
-        var sentenceArray = sentence.split(" ");
+        var sentenceArray = sentence.trim().split(" ");
 
         //faut que la phrase est + de 2 mot
         if (sentenceArray.length == 1 || sentenceArray.length == 2) {
@@ -147,12 +153,6 @@ class Quizz {
 
         if (nbWord == 2 && sentenceArray.length > 4) {
             nbWord = 3;
-        }
-
-        if (nbWord != 0) {
-            this.thereAreIndice = true;
-        } else {
-            this.thereAreIndice = false;
         }
 
         while (randomArray.length != nbWord) {
@@ -164,15 +164,32 @@ class Quizz {
 
         sentence = "";
 
-        for (var i = 0; i < sentenceArray.length; i++) {
-            if (randomArray.includes(i)) {
-                sentence = sentence + sentenceArray[i];
-            } else {
-                for (var a = 0; a < sentenceArray[i].length; a++) {
-                    sentence = sentence + ".";
+        if (this.listWord[this.wordActual]['validate_without_word_indice'] == false) {
+            for (var i = 0; i < sentenceArray.length; i++) {
+                if (randomArray.includes(i)) {
+                    sentence = sentence + sentenceArray[i];
+                } else {
+                    for (var a = 0; a < sentenceArray[i].length; a++) {
+                        sentence = sentence + ".";
+                    }
                 }
+                sentence = sentence + " ";
             }
-            sentence = sentence + " ";
+        }
+
+        console.log(this.listWord[this.wordActual]['validate_without_word_indice']);
+        console.log(sentence);
+
+        if (nbWord != 0) {
+            this.thereAreIndiceWord = true;
+        } else {
+            this.thereAreIndiceWord = false;
+        }
+
+        if (sentence != "") {
+            this.thereAreIndice = true;
+        } else {
+            this.thereAreIndice = false;
         }
 
         return sentence;
@@ -413,6 +430,10 @@ class Quizz {
             this.calculSuccessRate(this.wordActual);
             this.goodAnswer++;
 
+            if (this.thereAreIndiceWord == false) {
+                this.listWord[this.wordActual]['validate_without_word_indice'] = true;
+            }
+
             if (!this.thereAreIndice) {
                 this.listWord[this.wordActual]['word_validate'] = true;
             }
@@ -432,6 +453,9 @@ class Quizz {
             (this.reverse ? this.listWord[this.wordActual]['wrong_counter_reverse']++ : this.listWord[this.wordActual]['wrong_counter']++);
             this.wrongAnswer++;
             this.resultCheck = "wrong";
+
+            this.listWord[this.wordActual]['validate_without_word_indice'] = false;
+
             this.calculSuccessRate(this.wordActual);
 
             this.addPrioritizeWord(this.wordActual);
