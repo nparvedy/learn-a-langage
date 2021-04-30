@@ -1,16 +1,16 @@
 //todo : faire en sorte que les phrase qui contient les mots seul sortent à la suite (ex : "word" => "A great Word")
 //todo : plus on se trompe sur certains mots dans une phrase et plus ils ont des chances d'apparaître pour aider
-//todo : faire en sorte que les phrases dont les mots se ressemble à plus de chance d'apparaître
-//todo : si une réponse est celui d'un autre mot, alors faire en sorte que ces deux mots apparaisse plus souvent /// si ça ne marche pas, alors faire en sorte qu'au début on entraine qu'un des deux, après on entraîne sur l'autre mot et après on entraine avec les deux en même temps
-//todo : faire en sorte qu'une ne retombe pas plus que 2 fois d'affilé
 //todo : avoir un historique des 5 derniers mot et si une erreur est provoqué après réussite, vérifié si deux mots n'est pas revenu deux fois et qui pourrait porter confusion à l'utilisateur !! vraiment important
-//todo : lors d'une phrase, si l'utilisateur se trompe sur certains mot, plutôt que d'autres, alors faire en sorte que les indices sont ceux où il s'est trompé (concerne seulement les 5 mots du tableau pour limité au maximum)
 //todo : Réduire à 3 mot/phrases quand il y en a 5 dans le tableau et faire en sorte qu'il ne peuvent pas retomber deux fois d'affilé
 //todo : Si l'utilisateur met plus de 10 secondes pour valider le prochain mot alors il doit réaparaître au bout des 3 prochains mots
 //todo : récupérer les erreurs de mots d'une réponse, si il est complètement différent du mot de la réponse et si c'est le cas alors chercher si le mot existe  dans la liste, si c'est le cas alors l'afficher.
-//todo : une fois le mot traduit alors afficher là où il y a une erreur si il y en a /!\
 //todo : le nombre d'indice pourrait être déterminé par le nombres de mots, exemple (5 mot donc 4 indice), et si l'utilisateur réussit les mots alors que l'indice du mot n'est pas affiché alors c'est validé le mot. 
 //todo : si tu réussi une phrase, tu ne peux pas retomber une deuxième sur la même phrase/mot
+
+//todo : faire en sorte que les phrases dont les mots se ressemble à plus de chance d'apparaître /!\
+//todo : lors d'une phrase, si l'utilisateur se trompe sur certains mot, plutôt que d'autres, alors faire en sorte que les indices sont ceux où il s'est trompé (concerne seulement les 5 mots du tableau pour limité au maximum)/!\
+//todo : une fois le mot traduit alors afficher là où il y a une erreur si il y en a /!\
+//todo : si une réponse est celui d'un autre mot, alors faire en sorte que ces deux mots apparaisse plus souvent /// si ça ne marche pas, alors faire en sorte qu'au début on entraine qu'un des deux, après on entraîne sur l'autre mot et après on entraine avec les deux en même temps /!\
 
 //todo : faire en sorte que pendant le formulaire de liste de mot, on peut dire que cette phrase est une expression, il s'ajoutera comme indice pour prévenir à l'utilisateur que c'est expression et qu'il ne faut pas traduire mot à mot
 
@@ -47,6 +47,7 @@ class Quizz {
     onlyWordListReverse = [];
     onlyIdWord = "";
     indicePart = false;
+    lastAnswer = "";
 
     prioritizeWordBoardNew = [];
 
@@ -174,7 +175,6 @@ class Quizz {
         // console.log("taille : " + sentenceArray.length);
         // console.log("indice1 : " + this.listWord[this.wordActual]['indicePartOne']);
         // console.log("indice2 : " + this.listWord[this.wordActual]['indicePartTwo']);
-        console.log(this.listWord[this.wordActual][validateWithoutWordIndice]);
 
         if (sentenceArray.length > 1 && this.listWord[this.wordActual]['word_validate'] == false && (this.listWord[this.wordActual]['indicePartOne'] == false || this.listWord[this.wordActual]['indicePartTwo'] == false)) {
             return this.getSentenceIfPartInvalid(sentence, sentenceArray);
@@ -542,6 +542,7 @@ class Quizz {
     }
 
     checkWord(WordTranslated) {
+        this.lastAnswer = WordTranslated;
 
         if ((this.reverse ? this.listWord[this.wordActual]['word_to_translate'].toLowerCase().trim() : this.listWord[this.wordActual]['word_translated'].toLowerCase().trim()) == WordTranslated.toLowerCase().trim()) {
             (this.reverse ? this.listWord[this.wordActual]['right_counter_reverse']++ : this.listWord[this.wordActual]['right_counter']++);
@@ -646,6 +647,9 @@ class Quizz {
             <div class="alert alert-primary" role="alert">
                 ${(this.reverse ? this.listWord[this.lastWord]['word_translated'] : this.listWord[this.lastWord]['word_to_translate'])}
             </div>
+            <div class="alert alert-light" role="alert">
+                ${this.checkWhatIsWrong()}
+            </div>
             <p>Vous avez ${this.goodAnswer} bon et ${this.wrongAnswer} faux.</p>
             `
         }
@@ -663,6 +667,74 @@ class Quizz {
             }
         }
 
+    }
+
+    checkWhatIsWrong() {
+        var sentenceToTranslate = (this.reverse ? this.listWord[this.lastWord]['word_to_translate'] : this.listWord[this.lastWord]['word_translated']);
+        sentenceToTranslate = sentenceToTranslate.toLowerCase();
+        var answer = this.lastAnswer;
+        answer = answer.toLowerCase();
+
+        //savoir quel mots sont bons et ceux qui sont mauvais
+        var sentenceArray = sentenceToTranslate.trim().split(" ");
+        var answerArray = answer.trim().split(" ");
+
+        var result = "";
+
+        //renvoyer la phrase avec les bons mots en vert et ceux qui sont faux en rouge
+        for (var i = 0; i < answerArray.length; i++) {
+            if (answerArray.length == 1 && answerArray[0] == "") {
+                return "Vous avez envoyez une réponse vide";
+            }
+
+            if (sentenceArray.includes(answerArray[i])) {
+                result = result + `<span class="text-success">${answerArray[i]}</span>`;
+            } else {
+                //dans le mot mauvais, n'afficher que la partie mauvais en rouge
+
+                var value = this.checkWhatIsWrongResult(i, answerArray, sentenceArray);
+
+                console.log(value);
+
+                if (value == false) {
+                    result = result + `<span class="text-danger">${answerArray[i]}</span>`;
+                } else {
+                    result = result + value;
+                }
+
+            }
+
+            result = result + " ";
+        }
+
+        return result;
+
+        //si il manque une lettre dans le mot alors afficher la lettre qui manque en rouge
+    }
+
+    checkWhatIsWrongResult(i, answerArray, sentenceArray) {
+        var result = false;
+        console.log(i);
+        for (var a = 0; a < sentenceArray.length; a++) {
+            if (sentenceArray[a].includes(answerArray[i])) {
+                //afficher le restes des lettres qui manque en rouge après le mot
+                result = `<span class="text-success">${answerArray[i]}</span>`;
+                for (var b = answerArray[i].length; b < sentenceArray[a].length; b++) {
+                    result = result + `<span class="text-warning">${sentenceArray[a][b]}</span>`;
+                }
+            } else if (answerArray[i].includes(sentenceArray[a])) {
+                //sinon affiché en rouge les lettres en trop
+                result = `<span class="text-success">${sentenceArray[a]}</span>`;
+
+                for (var c = sentenceArray[a].length; c < answerArray[i].length; c++) {
+                    result = result + `<span class="text-danger">${answerArray[i][c]}</span>`;
+                }
+
+            }
+
+        }
+
+        return result;
     }
 
     timer() {
