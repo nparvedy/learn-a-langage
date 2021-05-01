@@ -618,7 +618,11 @@ class Quizz {
 
         if (this.wrongWordValidateCount[this.wrongWordSelected] == 2) {
             if (!this.wrongWordValidate[this.wrongWordSelected]) {
+                //on reset tout
                 this.wrongWordValidate[this.wrongWordSelected] = true;
+                this.wrongWordArray = [];
+                this.wrongWordValidate = [false, false];
+                this.wrongWordValidateCount = [0, 0];
             }
         } else {
             this.wrongWordValidateCount[this.wrongWordSelected]++;
