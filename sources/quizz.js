@@ -9,8 +9,7 @@
 
 //todo : faire en sorte que les phrases dont les mots se ressemble à plus de chance d'apparaître /!\
 //todo : lors d'une phrase, si l'utilisateur se trompe sur certains mot, plutôt que d'autres, alors faire en sorte que les indices sont ceux où il s'est trompé (concerne seulement les 5 mots du tableau pour limité au maximum)/!\
-//todo : une fois le mot traduit alors afficher là où il y a une erreur si il y en a /!\
-//todo : si une réponse est celui d'un autre mot, alors faire en sorte que ces deux mots apparaisse plus souvent /// si ça ne marche pas, alors faire en sorte qu'au début on entraine qu'un des deux, après on entraîne sur l'autre mot et après on entraine avec les deux en même temps /!\
+//todo :  /!\/!\
 
 //todo : faire en sorte que pendant le formulaire de liste de mot, on peut dire que cette phrase est une expression, il s'ajoutera comme indice pour prévenir à l'utilisateur que c'est expression et qu'il ne faut pas traduire mot à mot
 
@@ -23,8 +22,10 @@
 //DONE : validation final sans les petits points pour aider
 //DONE : a chaque bonne réponse, ne pas afficher un deuxième fois, 
 //DONE : si la phrase à plus de 5 mots, alors les indices doivent être validés, exemple (un jour .. ....) ou (.. .... il pleut), tant que les deux ne sont pas validés alors il y aura toujours les indices. /!\
+//DONE : si une réponse est celui d'un autre mot, alors faire apparaître les deux mots à la suite pendant 2 fois, et tant que l'utilisateur se trompe au bout du deuxième affichage alors continuer jusqu'à validation des deux mots. [Avalable only in array 5 words]
 
-//correction à faire : Vérifier pourquoi après une erreur, l'indice ... ne s'affiche pas.
+//ALMOST DONE : une fois le mot traduit alors afficher là où il y a une erreur si il y en a (l'erreur ne s'affiche que si il y a une erreur à la fin du mot, faire en sorte que l'erreur peut être avant ou au milieu du mot)
+
 
 class Quizz {
 
@@ -48,6 +49,12 @@ class Quizz {
     onlyIdWord = "";
     indicePart = false;
     lastAnswer = "";
+
+    wrongWord = false;
+    wrongWordArray = [];
+    wrongWordValidate = [false, false];
+    wrongWordValidateCount = [0, 0];
+    wrongWordSelected;
 
     prioritizeWordBoardNew = [];
 
@@ -104,6 +111,8 @@ class Quizz {
             this.lastWord = this.wordActual;
             this.checkWord(this.mytranslate.value);
 
+            console.log(this.prioritizeWordBoard);
+            console.log(this.prioritizeWordBoardNew);
         }
         this.wordActual = this.selectWordNew();
 
@@ -166,15 +175,8 @@ class Quizz {
             nbWord = 1;
         }
 
-
         var validateWithoutWordIndice = (this.reverse ? "validate_without_word_indice_reverse" : "validate_without_word_indice");
         var sentenceArray = sentence.trim().split(" ");
-
-        // console.log("WordActuel : " + this.wordActual);
-        //console.log("validate : " + this.listWord[this.wordActual]['word_validate']);
-        // console.log("taille : " + sentenceArray.length);
-        // console.log("indice1 : " + this.listWord[this.wordActual]['indicePartOne']);
-        // console.log("indice2 : " + this.listWord[this.wordActual]['indicePartTwo']);
 
         if (sentenceArray.length > 1 && this.listWord[this.wordActual]['word_validate'] == false && (this.listWord[this.wordActual]['indicePartOne'] == false || this.listWord[this.wordActual]['indicePartTwo'] == false)) {
             return this.getSentenceIfPartInvalid(sentence, sentenceArray);
@@ -352,6 +354,12 @@ class Quizz {
     //Etape 1
     selectWordNew() {
 
+        console.log(this.wrongWord);
+
+        if (this.wrongWord == true) {
+            return this.wrongWordArray[this.wrongWordSelected];
+        }
+
         if (this.prioritizeWordBoardNew.length == 5) {
             var minKey = this.SelectMinWordBoard();
 
@@ -375,7 +383,6 @@ class Quizz {
             const random = Math.floor(Math.random() * array.length);
 
             //faire en sorte que le score le plus bas apparaisse plus souvent et ainsi de suite
-
 
             return this.prioritizeWordBoardNew[array[random]];
         } else {
@@ -451,14 +458,11 @@ class Quizz {
         var translateOrNot = (this.reverse ? "word_translated" : "word_to_translate");
 
         if (this.listWord[idWord][translateOrNot].trim().includes(" ")) {
-            //if (this.listWord[idWord][translateOrNot].trim()) {
             //traiter la phrase et prendre qu'un mot
             var sentence = this.listWord[idWord][translateOrNot].trim().split(" ");
             for (var i = 0; i < sentence.length; i++) {
 
                 //on copie le tableau sans ses propriété de l'attribut de la classe
-                // var onlyWordListCopy = JSON.parse(JSON.stringify(this.onlyWordList))
-                // onlyWordListCopy[idWord] = "";
 
                 var idWordFound = this.findAWordInTheList(sentence[i]);
 
@@ -551,6 +555,10 @@ class Quizz {
             this.calculSuccessRate(this.wordActual);
             this.goodAnswer++;
 
+            if (this.wrongWord) {
+                this.checkInWrongWordValidate();
+            }
+
             var validateWithoutWordIndice = (this.reverse ? "validate_without_word_indice_reverse" : "validate_without_word_indice");
 
             if ((this.reverse ? this.thereAreIndiceWordReverse : this.thereAreIndiceWord) == false) {
@@ -585,11 +593,63 @@ class Quizz {
 
             this.listWord[this.wordActual][validateWithoutWordIndice] = false;
 
+            if (this.wrongWord) {
+                this.changeWrongWordSelected();
+            }
+
+            //on vérifie si le mot traduit n'est pas la traduction d'un autre mot
+            if (this.prioritizeWordBoardNew.length == 5 && this.wrongWord != true) {
+                var ifWrongWord = this.ifTranslatingIsAnother(WordTranslated.toLowerCase().trim());
+                if (ifWrongWord != false) {
+                    this.wrongWord = true;
+                    this.wrongWordArray = [ifWrongWord, this.wordActual];
+                    this.wrongWordSelected = 0;
+                }
+            }
+
             this.calculSuccessRate(this.wordActual);
 
             this.addPrioritizeWord(this.wordActual);
             this.addPrioritizeWordNew(this.wordActual);
         }
+    }
+
+    checkInWrongWordValidate() {
+
+        if (this.wrongWordValidateCount[this.wrongWordSelected] == 2) {
+            if (!this.wrongWordValidate[this.wrongWordSelected]) {
+                this.wrongWordValidate[this.wrongWordSelected] = true;
+            }
+        } else {
+            this.wrongWordValidateCount[this.wrongWordSelected]++;
+        }
+
+        if (this.wrongWordValidate[0] == true && this.wrongWordValidate[1] == true) {
+            this.wrongWord = false;
+        } else {
+            this.changeWrongWordSelected();
+        }
+    }
+
+    changeWrongWordSelected() {
+        if (this.wrongWordSelected == 0) {
+            this.wrongWordSelected = 1;
+        } else {
+            this.wrongWordSelected = 0;
+        }
+    }
+
+    ifTranslatingIsAnother(wordTranslated) {
+        var reverse = (this.reverse ? "word_to_translate" : "word_translated");
+        console.log("mot traduit : " + wordTranslated);
+
+        for (var i = 0; i < this.prioritizeWordBoardNew.length; i++) {
+            if (this.listWord[this.prioritizeWordBoardNew[i]][reverse] == wordTranslated) {
+                return this.prioritizeWordBoardNew[i];
+            }
+        }
+
+        return false;
     }
 
     validationIndicePart() {
@@ -694,8 +754,6 @@ class Quizz {
 
                 var value = this.checkWhatIsWrongResult(i, answerArray, sentenceArray);
 
-                console.log(value);
-
                 if (value == false) {
                     result = result + `<span class="text-danger">${answerArray[i]}</span>`;
                 } else {
@@ -714,7 +772,7 @@ class Quizz {
 
     checkWhatIsWrongResult(i, answerArray, sentenceArray) {
         var result = false;
-        console.log(i);
+
         for (var a = 0; a < sentenceArray.length; a++) {
             if (sentenceArray[a].includes(answerArray[i])) {
                 //afficher le restes des lettres qui manque en rouge après le mot
@@ -775,8 +833,3 @@ var quizz = new Quizz;
 function next() {
     quizz.next();
 }
-
-
-// function reverse() {
-//     quizz.reverse();
-// }
