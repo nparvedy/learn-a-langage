@@ -9,13 +9,16 @@
 
 //todo : faire en sorte que les phrases dont les mots se ressemble à plus de chance d'apparaître /!\
 //todo : lors d'une phrase, si l'utilisateur se trompe sur certains mot, plutôt que d'autres, alors faire en sorte que les indices sont ceux où il s'est trompé (concerne seulement les 5 mots du tableau pour limité au maximum)/!\
-//todo :  /!\/!\
+
+//rework : Quand on donne la traduction d'un autre, au lieu que ça affiche 2 fois d'affilé l'un de l'autre et seulement pendant le tableau 5 phrases, alors ça marche tout le temps et ça affiche simplement les deux mots jusqu'à validation des mot au moins 1 fois au lieu d'afficher 3 fois (2 compter + validation)/!\/!\
 
 //todo : faire en sorte que pendant le formulaire de liste de mot, on peut dire que cette phrase est une expression, il s'ajoutera comme indice pour prévenir à l'utilisateur que c'est expression et qu'il ne faut pas traduire mot à mot
 
 //todo : faire en sorte qu'à chaque nouvelle liste, les mots s'ajouté dans une liste entière de tous les mots de toutes les listes
 //todo : pendant l'ajout d'un nouveau mot, si le même existe déjà alors sa traduction s'ajoute alors
 //todo : si tous les mots sont validés, alors la liste est validé.
+
+//todo : l'utilisateur pourrait mettre une image pour lui donner un indice et trouver le mot, sans oublier préciser si c'est un verbre, adverbe, voire même une phrase d'indice comme par exemple la définition du mot dans la langue du mot. [Very important but later]
 
 //DONE : Ce n'est pas parce qu'on réussi du premier coup (100%) qu'il doit apparaitre aussi peu souvent, surtout avec l'aide. La validation doit se réussir sans aide. 
 //DONE : faire en sorte que le mot seule sortent en premier et après les phrases
@@ -24,7 +27,7 @@
 //DONE : si la phrase à plus de 5 mots, alors les indices doivent être validés, exemple (un jour .. ....) ou (.. .... il pleut), tant que les deux ne sont pas validés alors il y aura toujours les indices. /!\
 //DONE : si une réponse est celui d'un autre mot, alors faire apparaître les deux mots à la suite pendant 2 fois, et tant que l'utilisateur se trompe au bout du deuxième affichage alors continuer jusqu'à validation des deux mots. [Avalable only in array 5 words]
 
-//ALMOST DONE : une fois le mot traduit alors afficher là où il y a une erreur si il y en a (l'erreur ne s'affiche que si il y a une erreur à la fin du mot, faire en sorte que l'erreur peut être avant ou au milieu du mot)
+//ALMOST DONE : une fois le mot traduit alors afficher là où il y a une erreur si il y en a (l'erreur ne s'affiche que si il y a une erreur à la fin du mot, faire en sorte que l'erreur peut être avant ou au milieu du mot) Si le mot "imprudent" on écrit "prudent", alors il faut repérer à quelle numéro de lettre et ajouter les lettres d'avant "im" + "prudent". [Manque plus qu'à vérifier pour tous les mots dans une phrase au lieu de seulement le dernier mot].
 
 
 class Quizz {
@@ -111,8 +114,6 @@ class Quizz {
             this.lastWord = this.wordActual;
             this.checkWord(this.mytranslate.value);
 
-            console.log(this.prioritizeWordBoard);
-            console.log(this.prioritizeWordBoardNew);
         }
         this.wordActual = this.selectWordNew();
 
@@ -353,8 +354,6 @@ class Quizz {
 
     //Etape 1
     selectWordNew() {
-
-        console.log(this.wrongWord);
 
         if (this.wrongWord == true) {
             return this.wrongWordArray[this.wrongWordSelected];
@@ -598,7 +597,8 @@ class Quizz {
             }
 
             //on vérifie si le mot traduit n'est pas la traduction d'un autre mot
-            if (this.prioritizeWordBoardNew.length == 5 && this.wrongWord != true) {
+            //if (this.prioritizeWordBoardNew.length == 5 && this.wrongWord != true)
+            if (this.wrongWord != true) {
                 var ifWrongWord = this.ifTranslatingIsAnother(WordTranslated.toLowerCase().trim());
                 if (ifWrongWord != false) {
                     this.wrongWord = true;
@@ -618,18 +618,20 @@ class Quizz {
 
         if (this.wrongWordValidateCount[this.wrongWordSelected] == 2) {
             if (!this.wrongWordValidate[this.wrongWordSelected]) {
-                //on reset tout
                 this.wrongWordValidate[this.wrongWordSelected] = true;
-                this.wrongWordArray = [];
-                this.wrongWordValidate = [false, false];
-                this.wrongWordValidateCount = [0, 0];
             }
         } else {
             this.wrongWordValidateCount[this.wrongWordSelected]++;
         }
 
         if (this.wrongWordValidate[0] == true && this.wrongWordValidate[1] == true) {
+
+            //on reset tout
             this.wrongWord = false;
+
+            this.wrongWordArray = [];
+            this.wrongWordValidate = [false, false];
+            this.wrongWordValidateCount = [0, 0];
         } else {
             this.changeWrongWordSelected();
         }
@@ -645,11 +647,16 @@ class Quizz {
 
     ifTranslatingIsAnother(wordTranslated) {
         var reverse = (this.reverse ? "word_to_translate" : "word_translated");
-        console.log("mot traduit : " + wordTranslated);
 
-        for (var i = 0; i < this.prioritizeWordBoardNew.length; i++) {
-            if (this.listWord[this.prioritizeWordBoardNew[i]][reverse] == wordTranslated) {
-                return this.prioritizeWordBoardNew[i];
+        // for (var i = 0; i < this.prioritizeWordBoardNew.length; i++) {
+        //     if (this.listWord[this.prioritizeWordBoardNew[i]][reverse] == wordTranslated) {
+        //         return this.prioritizeWordBoardNew[i];
+        //     }
+        // }
+
+        for (var i = 0; i < this.listWord.length; i++) {
+            if (this.listWord[i][reverse] == wordTranslated) {
+                return i;
             }
         }
 
@@ -776,14 +783,42 @@ class Quizz {
 
     checkWhatIsWrongResult(i, answerArray, sentenceArray) {
         var result = false;
+        var wordRecovery = "";
 
         for (var a = 0; a < sentenceArray.length; a++) {
+
+            console.log(sentenceArray[a]);
             if (sentenceArray[a].includes(answerArray[i])) {
-                //afficher le restes des lettres qui manque en rouge après le mot
-                result = `<span class="text-success">${answerArray[i]}</span>`;
-                for (var b = answerArray[i].length; b < sentenceArray[a].length; b++) {
-                    result = result + `<span class="text-warning">${sentenceArray[a][b]}</span>`;
+                //on vérifie la position des lettres
+                var checkPosition = this.checkPositionCharacter(sentenceArray[a], answerArray[i]);
+
+                //afficher le restes des lettres qui manque en jaune après le mot
+                //si le check est false alors le reste du mot est avant, sinon après
+
+                if (checkPosition[0]) {
+                    result = `<span class="text-success">${answerArray[i]}</span>`;
+                    for (var b = answerArray[i].length; b < sentenceArray[a].length; b++) {
+                        result = result + `<span class="text-warning">${sentenceArray[a][b]}</span>`;
+                    }
+                } else {
+
+                    //on récupère la partie avant
+                    result = `<span class="text-warning">${sentenceArray[a].substring(0, checkPosition[1])}</span>`;
+
+                    wordRecovery = sentenceArray[a].substring(0, checkPosition[1]);
+
+                    result = result + `<span class="text-success">${answerArray[i]}</span>`;
+
+                    wordRecovery = wordRecovery + answerArray[i];
+
+                    //si le mot n'est pas entier, alors on rajoute les lettres qui manque
+
+                    if (wordRecovery.length != sentenceArray[a].length) {
+                        result = result + `<span class="text-warning">${sentenceArray[a].substring(wordRecovery.length, sentenceArray[a].length)}</span>`
+                    }
                 }
+
+
             } else if (answerArray[i].includes(sentenceArray[a])) {
                 //sinon affiché en rouge les lettres en trop
                 result = `<span class="text-success">${sentenceArray[a]}</span>`;
@@ -797,6 +832,16 @@ class Quizz {
         }
 
         return result;
+    }
+
+    checkPositionCharacter(wordToTranslate, wordTranslated) {
+        var pos = wordToTranslate.indexOf(wordTranslated);
+
+        if (pos != 0) {
+            return [false, pos];
+        } else {
+            return [true, pos];
+        }
     }
 
     timer() {
