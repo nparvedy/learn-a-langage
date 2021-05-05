@@ -1,7 +1,14 @@
+<?php
+$pageIsTrue = false;
+if (stripos($_SERVER["REQUEST_URI"], 'pages/learn-by-translating.php')) {
+    $pageIsTrue = true;
+}
+?>
+
 <header>
     <nav class="navbar navbar-expand-md navbar-dark bg-dark">
         <div class="container-fluid">
-            <a class="navbar-brand" href=<?= parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH); ?>>Apprendre une langue</a>
+            <a class="navbar-brand" href=<?= parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH); ?>>Apprendre en traduisant</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -17,13 +24,13 @@
                     <?php
                     } else {
                     ?>
-                        <a class="nav-link" href="../pages/profil.php">Profil</a>
-                        <a class="nav-link connexion" href="app/logout.php">Deconnexion</a>
+                        <a class="nav-link disabled" href="../pages/profil.php">Profil</a>
+                        <a class="nav-link connexion" href="<?php echo ($pageIsTrue ? "../app/logout.php" : "app/logout.php"); ?>">Deconnexion</a>
                     <?php
 
                     }
                     ?>
-                    <!--<a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>-->
+                    <!--<a class=" nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>-->
                 </div>
             </div>
         </div>

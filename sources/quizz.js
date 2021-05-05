@@ -715,11 +715,11 @@ class Quizz {
             <div class="alert alert-danger" role="alert">
                 Et non ! La traduction était plutôt : ${(this.reverse ? this.listWord[this.lastWord]['word_to_translate'] : this.listWord[this.lastWord]['word_translated'])}
             </div>
-            <div class="alert alert-primary" role="alert">
-                ${(this.reverse ? this.listWord[this.lastWord]['word_translated'] : this.listWord[this.lastWord]['word_to_translate'])}
-            </div>
             <div class="alert alert-light" role="alert">
                 ${this.checkWhatIsWrong()}
+            </div>
+            <div class="alert alert-primary" role="alert">
+                ${(this.reverse ? this.listWord[this.lastWord]['word_translated'] : this.listWord[this.lastWord]['word_to_translate'])}
             </div>
             <p>Vous avez ${this.goodAnswer} bon et ${this.wrongAnswer} faux.</p>
             `

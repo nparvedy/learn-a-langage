@@ -1,6 +1,10 @@
 <?php
 session_start();
 
+if (!isset($_SESSION['pseudo'])) {
+    header('Location: ./../');
+}
+
 require '../class/BDD.php';
 
 $bdd = new BDD;
@@ -10,8 +14,8 @@ $allList = $bdd->getList($_SESSION['id']);
 require '../class/LevelQuizz.php';
 
 $levelQuizz = new LevelQuizz($bdd);
-?>
 
+?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -20,7 +24,7 @@ $levelQuizz = new LevelQuizz($bdd);
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Apprendre une langue - Apprendre en traduisant</title>
+    <title>Apprendre en traduisant - quizz</title>
 </head>
 
 <body>
@@ -33,22 +37,31 @@ $levelQuizz = new LevelQuizz($bdd);
             <div class="col-md-6">
                 <div class="h-100 p-4  border rounded-3">
                     <h2 class="mb-3">Charger votre liste</h2>
-                    <form method="post" id="load-list">
-                        <select class="form-select form-select-sm mb-3" aria-label=".form-select-sm example" name="list">
-                            <option selected value="<?= $allList[0]['id'] ?>">Charger votre liste de mot </option>
-                            <?php
-                            for ($i = 0; $i < count($allList); $i++) {
-                                echo "<option value=\"" . $allList[$i]['id'] . "\">" . $allList[$i]['list_name'] . " " . $levelQuizz->level($allList[$i]['id']) . "</option>";
-                            }
-                            ?>
-                        </select>
-                        <div class="mb-3 form-check">
-                            <input type="checkbox" class="form-check-input" id="exampleCheck1" name="timer">
-                            <label class="form-check-label">Timer ? (3 minutes)</label>
-                        </div>
+                    <?php
+                    if (empty($allList)) {
+                        echo "Désolé vous n'avez aucune liste à charger";
+                    } else {
+                    ?>
+                        <form method="post" id="load-list">
+                            <select class="form-select form-select-sm mb-3" aria-label=".form-select-sm example" name="list">
+                                <option selected value="<?= $allList[0]['id'] ?>">Charger votre liste de mot </option>
+                                <?php
 
-                        <button class="btn btn-outline-secondary " type="submit">Charger</button>
-                    </form>
+                                for ($i = 0; $i < count($allList); $i++) {
+                                    echo "<option value=\"" . $allList[$i]['id'] . "\">" . $allList[$i]['list_name'] . " " . $levelQuizz->level($allList[$i]['id']) . "</option>";
+                                }
+                                ?>
+                            </select>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="exampleCheck1" name="timer">
+                                <label class="form-check-label">Timer ? (3 minutes)</label>
+                            </div>
+
+                            <button class="btn btn-outline-secondary " type="submit">Charger</button>
+                        </form>
+                    <?php
+                    }
+                    ?>
                 </div>
             </div>
             <div class="col-md-6">
