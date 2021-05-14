@@ -114,8 +114,8 @@ class BDD
             'right_counter_reverse' => $object->right_counter_reverse,
             'success_rate' => $object->success_rate,
             'word_validate' => $object->word_validate,
-            'validate_without_word_indice' => $object->validate_without_word_indice,
-            'validate_without_word_indice_reverse' => $object->validate_without_word_indice_reverse,
+            'validate_without_word_indice' => intval($object->validate_without_word_indice),
+            'validate_without_word_indice_reverse' => intval($object->validate_without_word_indice_reverse),
             'id' => $object->id
         ]);
     }

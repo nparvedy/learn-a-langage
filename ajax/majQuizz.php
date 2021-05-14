@@ -12,7 +12,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'PUT') {
 for ($i = 0; $i < count($_PUT); $i++) {
     $bdd->majQuizz($_PUT[$i]);
 }
-
 ?>
 
 <div class="container py-5 bg-light">
