@@ -93,6 +93,10 @@ class Quizz {
             element.indicePartTwoReverse = false;
             element.indiceChose = 0;
             element.indiceChoseReverse = 0;
+            element.errorInARow = 0;
+            element.rightInARow = 0;
+            element.errorInARowReverse = 0;
+            element.rightInARowReverse = 0;
         });
 
     }
@@ -383,24 +387,34 @@ class Quizz {
         if (this.prioritizeWordBoardNew.length == 5) {
             var minKey = this.SelectMinWordBoard();
 
-            var array = [];
+            //var array = [];
+            var arrayWordWeight = [];
 
             for (var i = 0; i < this.prioritizeWordBoardNew.length; i++) {
                 if (!this.checkIfWordDidntAppears(this.prioritizeWordBoardNew[i])) {
-                    if (minKey == i) {
-                        for (var a = 0; a < 3; a++) {
-                            array.push(i);
-                        }
-                    } else {
-                        array.push(i);
-                    }
+                    // if (minKey == i) {
+                    //     for (var a = 0; a < 3; a++) {
+                    //         array.push(i);
+                    //     }
+                    // } else {
+                    //     array.push(i);
+                    // }
+                    arrayWordWeight.push({
+                        id: this.prioritizeWordBoardNew[i], weight: this.listWord[i]['weight']
+                    });
                 }
 
             }
 
-            array.sort(() => Math.random() - 0.5);
+            // array.sort(() => Math.random() - 0.5);
 
-            const random = Math.floor(Math.random() * array.length);
+            // const random = Math.floor(Math.random() * array.length);
+
+            arrayWordWeight.sort((a, b) => (a.weight > b.weight ? 1 : - 1));
+
+            const random = Math.floor(Math.random() * 3);
+
+            return arrayWordWeight[random]['id'];
 
             //faire en sorte que le score le plus bas apparaisse plus souvent et ainsi de suite
 
@@ -413,9 +427,12 @@ class Quizz {
     //Si étape 1 n'a pas trouvé de mot, alors l'étape 2 prend la relève
     selectWord() {
         //vérifié checkIfWordDidntAppears est vrai et si c'est vrai alors vérifié si c'est l'id dont il ne faut pas ajouter dans le tableau
-        var arrayWord = [];
+        //var arrayWord = [];
+        var arrayWordWeight = [];
+
         for (var i = 0; i < this.listWord.length; i++) {
             var check = false;
+
             if (this.lastWord != undefined) {
                 if (this.lastWord == i) {
                     check = this.checkIfWordDidntAppears(i);
@@ -423,56 +440,109 @@ class Quizz {
             }
             this.calculSuccessRate(i);
 
-            var moyenne = this.calculAverage(i, this.reverse);
-
             if (!check) {
-                if (parseInt(moyenne) <= Quizz.HARDCORE || this.listWord[i]['word_validate'] == false) {
-                    var a = 0;
-                    while (a < Math.round(this.listWord.length)) {
-                        arrayWord.push(i);
-                        a++;
-                    }
-                } else if (parseInt(moyenne) <= Quizz.REALLY_HARD) {
-                    var a = 0;
-                    while (a < Math.round(this.listWord.length / 3)) {
-                        arrayWord.push(i);
-                        a++;
-                    }
-                } else if (parseInt(moyenne) <= Quizz.HARD) {
-                    var a = 0;
-                    while (a < 3) {
-                        arrayWord.push(i);
-                        a++;
-                    }
-                } else if (parseInt(moyenne) <= Quizz.MEDIUM) {
-                    var a = 0;
-                    while (a < 2) {
-                        arrayWord.push(i);
-                        a++;
-                    }
-                } else if (parseInt(moyenne) <= Quizz.EASY) {
-                    arrayWord.push(i);
-                }
-
+                arrayWordWeight.push({ id: i, weight: this.listWord[i]['weight'] });
             }
+
+            // var moyenne = this.calculAverage(i, this.reverse);
+            //var weight = this.calculWeight(i);
+
+            //au lieu de la moyenne pour choisir le mot, on utilisera finalement le poid du mot
+
+            //Si le poid du mot vaut 0, alors on le renvoie directement
+            // var weight = (this.reverse ? "weight_reverse" : "weight");
+            // if (this.listWord[i][weight] == 0) {
+            //     return i;
+            // }
+
+            //check si la date fait plus de 24H pour le mot, si c'est le cas alors faut refaire le calculWeight
+
+            // if (!check) {
+            //     if (parseInt(moyenne) <= Quizz.HARDCORE || this.listWord[i]['word_validate'] == false) {
+            //         var a = 0;
+            //         while (a < Math.round(this.listWord.length)) {
+            //             arrayWord.push(i);
+            //             a++;
+            //         }
+            //     } else if (parseInt(moyenne) <= Quizz.REALLY_HARD) {
+            //         var a = 0;
+            //         while (a < Math.round(this.listWord.length / 3)) {
+            //             arrayWord.push(i);
+            //             a++;
+            //         }
+            //     } else if (parseInt(moyenne) <= Quizz.HARD) {
+            //         var a = 0;
+            //         while (a < 3) {
+            //             arrayWord.push(i);
+            //             a++;
+            //         }
+            //     } else if (parseInt(moyenne) <= Quizz.MEDIUM) {
+            //         var a = 0;
+            //         while (a < 2) {
+            //             arrayWord.push(i);
+            //             a++;
+            //         }
+            //     } else if (parseInt(moyenne) <= Quizz.EASY) {
+            //         arrayWord.push(i);
+            //     }
+
+            // }
 
         }
 
-        if (this.prioritizeWordBoard.length != 0) {
-            var a = 0;
-            while (a < this.listWord.length * this.prioritizeWordBoard[1]) {
-                arrayWord.push(this.prioritizeWordBoard[0]);
-                a++;
-            }
-        }
+        arrayWordWeight.sort((a, b) => (a.weight > b.weight ? 1 : - 1));
 
-        arrayWord = arrayWord.sort(() => Math.random() - 0.5);
+        const random = Math.floor(Math.random() * 3);
 
-        const random = Math.floor(Math.random() * arrayWord.length);
+        return arrayWordWeight[random]['id'];
 
-        var value = (this.checkIsAnotherWord(arrayWord[random]) ? this.onlyIdWord : arrayWord[random]);
+        // if (this.prioritizeWordBoard.length != 0) {
+        //     var a = 0;
+        //     while (a < this.listWord.length * this.prioritizeWordBoard[1]) {
+        //         arrayWord.push(this.prioritizeWordBoard[0]);
+        //         a++;
+        //     }
+        // }
 
-        return value;
+        //arrayWord = arrayWord.sort(() => Math.random() - 0.5);
+
+        // const random = Math.floor(Math.random() * arrayWord.length);
+
+        // var value = (this.checkIsAnotherWord(arrayWord[random]) ? this.onlyIdWord : arrayWord[random]);
+
+        //return value;
+    }
+
+    calculWeight(i) {
+        //X - (X - a / X);
+        //nbErreur - (nbErreur - rightInArrow / nbErreur);
+        //le poid retombe à 0 si la chaine de réussite est cassé, on ne veut pas de ça, faut prendre en compte le poid actuelle
+        // nbErreur - (nbErreur - rightInArrow / nbErreur) + poidActuel / différenceErrorRight
+        // nbErreur - (nbErreur - nbRightInARow / nbErreur) + poidActuel * (nbRight*nbRightInARow+1/(nbError*nbErrorInARow+1))
+        // this.listWord[i][weight] = nbError - (nbError - nbRightInARow / nbError) + this.listWord[i][weight] * (nbRight * (nbRightInARow + 1) / (nbError * (nbErrorInARow + 1))); (pas bon)
+        //1 - (1 - 0 / 1) + 0 * (0*(0+1) / (1*(1+1))
+
+        var wrong = (this.reverse ? "wrong_counter_reverse" : "wrong_counter");
+        var right = (this.reverse ? "right_counter_reverse" : "right_counter");
+        var rightInARow = (this.reverse ? "rightInARowReverse" : "rightInARow");
+        var errorInARow = (this.reverse ? "errorInARowReverse" : "errorInARow");
+        var weight = (this.reverse ? "weight_reverse" : "weight");
+        var nbError = this.listWord[i][wrong];
+        var nbRight = this.listWord[i][right];
+        var nbRightInARow = this.listWord[i][rightInARow];
+        var nbErrorInARow = this.listWord[i][errorInARow];
+
+        // console.log(nbError);
+        // console.log(nbRightInARow);
+        // console.log(this.listWord[i][weight]);
+        // console.log(nbRight);
+        // console.log(nbErrorInARow);
+
+        var value = nbError - (nbError - nbRightInARow / (nbError + (nbError == 0 ? 1 : 0))) + (this.listWord[i][weight] * (nbRight * nbRightInARow + (nbRightInARow == 0 ? 1 : 0) / (nbError * nbErrorInARow + (nbErrorInARow == 0 ? 1 : 0))));
+
+        value = value / (this.listWord[i][weight] + (this.listWord[i][weight] == 0 ? 1 : 0));
+        this.listWord[i][weight] = Math.round(value * 100) / 100;
+        //console.log(nbRight * nbRightInARow + 1 / (nbError * nbErrorInARow + 1)); - (nbRight - (nbRight - nbErrorInARow / (nbRight + 1)))
     }
 
     checkIsAnotherWord(idWord) {
@@ -556,8 +626,9 @@ class Quizz {
 
     deleteWordPrioritizeNew(idWord) {
         if (this.prioritizeWordBoardNew.includes(idWord)) {
-            console.log(this.calculAverage(idWord, this.reverse));
-            if (this.calculAverage(idWord, this.reverse) > Quizz.HARD && this.listWord[idWord]['word_validate'] == true) {
+            var weight = (this.reverse ? "weight_reverse" : "weight")
+            //if (this.calculAverage(idWord, this.reverse) > Quizz.HARD && this.listWord[idWord]['word_validate'] == true) {
+            if (this.listWord[idWord][weight] > Quizz.HARD && this.listWord[idWord]['word_validate'] == true) {
                 const index = this.prioritizeWordBoardNew.indexOf(idWord);
                 if (index > - 1) {
                     this.prioritizeWordBoardNew.splice(index, 1);
@@ -577,6 +648,15 @@ class Quizz {
             this.resultCheck = "good";
             this.calculSuccessRate(this.wordActual);
             this.goodAnswer++;
+
+            //on reset les erreurs d'affilé et on ajoute 1 à vrai d'affilé
+
+            var rightInARow = (this.reverse ? "rightInARowReverse" : "rightInARow");
+            var errorInARow = (this.reverse ? "errorInARowReverse" : "errorInARow");
+            this.listWord[this.wordActual][errorInARow] = 0;
+            this.listWord[this.wordActual][rightInARow]++;
+
+            this.calculWeight(this.wordActual);
 
             if (this.wrongWord) {
                 (this.notThisTime ? this.notThisTime = false : this.notThisTime = true);
@@ -614,6 +694,13 @@ class Quizz {
             (this.reverse ? this.listWord[this.wordActual]['wrong_counter_reverse']++ : this.listWord[this.wordActual]['wrong_counter']++);
             this.wrongAnswer++;
             this.resultCheck = "wrong";
+
+            var rightInARow = (this.reverse ? "rightInARowReverse" : "rightInARow");
+            var errorInARow = (this.reverse ? "errorInARowReverse" : "errorInARow");
+            this.listWord[this.wordActual][errorInARow]++;
+            this.listWord[this.wordActual][rightInARow] = 0;
+
+            this.calculWeight(this.wordActual);
 
             this.listWord[this.wordActual][validateWithoutWordIndice] = false;
 

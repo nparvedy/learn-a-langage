@@ -106,7 +106,7 @@ class BDD
 
     public function majQuizz($object)
     {
-        $req = $this->pdo->prepare('UPDATE list_word SET wrong_counter = :wrong_counter, right_counter = :right_counter, wrong_counter_reverse = :wrong_counter_reverse, right_counter_reverse = :right_counter_reverse, success_rate = :success_rate, word_validate = :word_validate, validate_without_word_indice = :validate_without_word_indice, validate_without_word_indice_reverse = :validate_without_word_indice_reverse WHERE id = :id');
+        $req = $this->pdo->prepare('UPDATE list_word SET wrong_counter = :wrong_counter, right_counter = :right_counter, wrong_counter_reverse = :wrong_counter_reverse, right_counter_reverse = :right_counter_reverse, success_rate = :success_rate, word_validate = :word_validate, validate_without_word_indice = :validate_without_word_indice, validate_without_word_indice_reverse = :validate_without_word_indice_reverse, weight = :weight, weight_reverse = :weight_reverse WHERE id = :id');
         $req->execute([
             'wrong_counter' => $object->wrong_counter,
             'right_counter' => $object->right_counter,
@@ -116,6 +116,8 @@ class BDD
             'word_validate' => $object->word_validate,
             'validate_without_word_indice' => intval($object->validate_without_word_indice),
             'validate_without_word_indice_reverse' => intval($object->validate_without_word_indice_reverse),
+            'weight' => $object->weight,
+            'weight_reverse' => $object->weight_reverse,
             'id' => $object->id
         ]);
     }
